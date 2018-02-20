@@ -22,7 +22,7 @@ lyb_par <- function(tif,splits){
 
 setwd("~/fire_data_mongering")
 tif_path <- "data/" # path to a folder containing tif files
-tif_path <- "~/DATA/FIRE/baecv/"
+#tif_path <- "~/DATA/FIRE/baecv/"
 result_path <- "results" # where you want the resulting rasters to go
 corz <- detectCores()
 
