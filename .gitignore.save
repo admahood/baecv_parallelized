@@ -1,0 +1,13 @@
+# R Notebook HTMLs
+*.nb.html
+
+# General folders and files
+data/
+results/
+kitematic/
+ov.rds
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+data/*
