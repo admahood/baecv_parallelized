@@ -6,13 +6,8 @@ library(sp)
 library(sf)
 
 # Functions ----------------------------------------------------------------------------
-lyb_par <- function(tif,splits){
-  year = as.integer(substr(tif, 15, 18)) # needs to be changed away from these magic numbers
+lyb_par <- function(splits){
   
-  # perhaps a list of years as the input is better?
-  v = c(0,0,0,
-        0.9,1.1,year)
-  m = matrix(v, ncol=3, byrow=TRUE)
   rcl <- raster::reclassify(splits,m)
   return(rcl)
   # saving just in case parallel only gets partially through
@@ -20,7 +15,7 @@ lyb_par <- function(tif,splits){
 
 # Workflow _______________________________________________________________________________
 
-setwd("~/fire_data_mongering")
+#setwd("~/fire_data_mongering")
 tif_path <- "data/" # path to a folder containing tif files
 #tif_path <- "~/DATA/FIRE/baecv/"
 result_path <- "results" # where you want the resulting rasters to go
@@ -36,11 +31,21 @@ for(i in 1:length(tifs)){
   r <- raster(tifs[i])
   year = as.integer(substr(tifs[i], 15, 18))
   splits <- list()
-  for(j in 1:length(sp_grd)){
-    splits[[j]] <-raster::crop(r, sp_grd[j])
-  }
+  # for(j in 1:length(sp_grd)){
+  #   splits[[j]] <-raster::crop(r, sp_grd[j])
+  # }
   cl <- makeCluster(getOption("cl.cores", corz))
-  spl_rcl <- parLapply(cl, c(tifs[i], splits), lyb_par)
+  splits <- parLapply(cl, c(r, sp_grd), raster::reclassify)
+  stopCluster(cl)
+  
+  rm(r)
+  year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
+  v = c(0,0,0,
+        0.9,1.1,year)
+  m = matrix(v, ncol=3, byrow=TRUE)
+  
+  cl <- makeCluster(getOption("cl.cores", corz))
+  spl_rcl <- parLapply(cl, c(splits, m), raster::reclassify)
   stopCluster(cl)
   rcl_all <- do.call(raster::merge, spl_rcl)
   writeRaster(rcl_all, file.path(result_path, paste0("lyb_",year, ".tif")))
