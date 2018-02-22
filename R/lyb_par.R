@@ -39,7 +39,9 @@ for(i in 1:length(tifs)){
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
-  spl_rcl <- foreach(k=1:length(splits)) %dopar% splits[[k]] + year_thing
+  spl_rcl <- foreach(k=1:length(splits)) %dopar% 
+    raster::calc(splits[[k]], fun = function(x){x + year_thing})
+  
   print(paste(Sys.time()-t1, "reclassifying", tifs[i]))
   rm(splits)
   
