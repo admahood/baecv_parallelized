@@ -8,6 +8,7 @@ library(sf)
 # Workflow _______________________________________________________________________________
 setwd("~/baecv_parallelized")
 dir.create("results")
+raster::removeTmpFiles()
 
 tif_path <- "data/" # path to a folder containing tif files
 result_path <- "results" # where you want the resulting rasters to go
