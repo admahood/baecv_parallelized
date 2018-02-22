@@ -53,7 +53,7 @@ for(i in 1:length(tifs)){
                 "s3://earthlab-ls-fire/lyb/lyb_",year,".tif"))
   rm(rcl_all)
   rm(spl_rcl)
-  
+  raster::removeTmpFiles()
 }
 
 res_tifs <- Sys.glob(paste0(result_path,"lyb_*.tif"))
