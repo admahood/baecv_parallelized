@@ -26,7 +26,7 @@ for(i in 1:length(tifs)){
   t1 <- Sys.time()
   registerDoParallel(cores=corz) # for some reason this works better with doparallel and foreach
   splits <- foreach(j=1:length(sp_grd)) %dopar% raster::crop(r, sp_grd[j])
-  print(paste(Sys.time() - t1, "splitting", tifs[i]))
+  print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
   rm(r)
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
@@ -42,18 +42,20 @@ for(i in 1:length(tifs)){
   spl_rcl <- foreach(k=1:length(splits)) %dopar% 
     raster::calc(splits[[k]], fun = function(x){x + year_thing})
   
-  print(paste(Sys.time()-t1, "reclassifying", tifs[i]))
+  print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   rm(splits)
   
+  print(dataType(spl_rcl[[1]]))
   t1 <- Sys.time()
   rcl_all <- do.call(raster::merge, spl_rcl)
-  print(paste(Sys.time()-t1, "merging", tifs[i]))
+  print(paste(Sys.time()-t1, "minutes for merging", tifs[i]))
   
   file <- file.path(result_path, paste0("lyb_",year, ".tif"))
+  print(dataType(rcl_all))
   
   t1 <- Sys.time()
   writeRaster(rcl_all, file)
-  print(paste(Sys.time()-t1, "writing", tifs[i]))
+  print(paste(Sys.time()-t1, "minutes for writing", tifs[i]))
   
   t1 <- Sys.time()
   system(paste0("aws s3 cp ",
