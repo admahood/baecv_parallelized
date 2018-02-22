@@ -68,7 +68,7 @@ for(i in 1:length(tifs)){
       t <- Sys.time()
       storage.mode(spl_rcl[[i]][]) <- "integer"
       print(paste("converted raster", i, "to integer in", Sys.time()-t))
-      writeRaster(spl_rcl[[i]], filename = paste0("reclass",year,i,".tif"))
+      writeRaster(spl_rcl[[i]], filename = paste0("scrap/reclass",year,i,".tif"))
       spl_rcl[[i]] <- NULL
     }
     print(paste("now it's this big:", format(object.size(spl_rcl), units = "Gb")))
