@@ -34,12 +34,11 @@ for(i in 1:length(tifs)){
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
   year_thing = year - 1983
-  
   v = c(0,0,0,
         0.9,1.1,year_thing)
   m = matrix(v, ncol=3, byrow=TRUE)
-  spl_rcl <- list()
   
+  spl_rcl <- list()
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
@@ -48,12 +47,15 @@ for(i in 1:length(tifs)){
   
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   rm(splits)
-  
+  gc()
   print(dataType(spl_rcl[[1]]))
   if (storage.mode(spl_rcl[[1]][]) != "integer"){
     print(object.size(spl_rcl))
     for(i in 1:length(spl_rcl)){
+      gc()
+      t <- Sys.time()
       storage.mode(spl_rcl[[i]][]) <- "integer"
+      print(paste("converted raster", i, "to integer in", Sys.time()-t))
     }
     print(object.size(spl_rcl))
   }
