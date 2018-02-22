@@ -30,7 +30,7 @@ for(i in 1:length(tifs)){
   print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
   rm(r)
 
-  print(paste(object.size(splits), Sys.time()-t1, dataType(splits[[1]])))
+  print(paste(object.size(splits), dataType(splits[[1]])))
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
   year_thing = year - 1983
