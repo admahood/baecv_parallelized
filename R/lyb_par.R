@@ -24,7 +24,7 @@ sp_grd <- sf::as_Spatial(grd)
 for(i in 1:length(tifs)){
   r <- raster(tifs[i])
   print(paste("data type is:", dataType(r)))
-  print(paste("it's this big:", format(object.size(r), units = "Gb")))
+  print(paste("it's this big:", format(object.size(r), units = "Mb")))
   splits <- list()
   
   t1 <- Sys.time()
