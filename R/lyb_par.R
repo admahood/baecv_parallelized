@@ -30,14 +30,16 @@ for(i in 1:length(tifs)){
   rm(r)
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
-  v = c(0,0,0,
-        0.9,1.1,year)
-  m = matrix(v, ncol=3, byrow=TRUE)
+  # v = c(0,0,0,
+  #       0.9,1.1,year)
+  # m = matrix(v, ncol=3, byrow=TRUE)
   spl_rcl <- list()
+  
+  year_thing <- year - 1984
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
-  spl_rcl <- foreach(k=1:length(splits)) %dopar% raster::reclassify(splits[[k]], m)
+  spl_rcl <- foreach(k=1:length(splits)) %dopar% splits[[k]] - year_thing
   print(paste(Sys.time()-t1, "reclassifying", tifs[i]))
   rm(splits)
   
@@ -54,7 +56,9 @@ for(i in 1:length(tifs)){
 
 res_tifs <- Sys.glob(paste0(result_path,"lyb_*.tif"))
 lyb_stk <- raster::stack(res_tifs)
-lyb = calc(lyb_stk, max)
+lyb <- calc(lyb_stk, max)
+lyb1 <- lyb + 1983
+lyb <- lyb * lyb1
 final_file <-  paste0(result_path,"lyb_whole_US_1984_2015_BAECV.tif")
 raster::writeRaster(lyb, filename = final_file)
 system(paste0("aws s3 cp ",
