@@ -45,12 +45,23 @@ for(i in 1:length(tifs)){
   print(paste(Sys.time()-t1, "reclassifying", tifs[i]))
   rm(splits)
   
+  t1 <- Sys.time()
   rcl_all <- do.call(raster::merge, spl_rcl)
+  print(paste(Sys.time()-t1, "merging", tifs[i]))
+  
   file <- file.path(result_path, paste0("lyb_",year, ".tif"))
+  
+  t1 <- Sys.time()
   writeRaster(rcl_all, file)
+  print(paste(Sys.time()-t1, "writing", tifs[i]))
+  
+  t1 <- Sys.time()
   system(paste0("aws s3 cp ",
                 file, " ",
                 "s3://earthlab-ls-fire/lyb/lyb_",year,".tif"))
+  print(paste(Sys.time()-t1, "sending to s3", tifs[i]))
+  
+  system(paste("rm", file))
   rm(rcl_all)
   rm(spl_rcl)
   raster::removeTmpFiles()
