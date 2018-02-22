@@ -29,13 +29,7 @@ for(i in 1:length(tifs)){
   splits <- foreach(j=1:length(sp_grd)) %dopar% raster::crop(r, sp_grd[j])
   print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
   rm(r)
-  
-  print(dataType(splits[[1]]))
-  print(object.size(splits))
-  t1 <- Sys.time()
-  for(i in 1:length(splits)){
-  storage.mode(splits[[i]][]) <- "integer"
-  }
+
   print(paste(object.size(splits), Sys.time()-t1, dataType(splits[[1]])))
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
