@@ -8,6 +8,7 @@ library(sf)
 # Workflow _______________________________________________________________________________
 setwd("~/baecv_parallelized")
 dir.create("results")
+dir.create("scrap")
 raster::removeTmpFiles()
 
 tif_path <- "data/" # path to a folder containing tif files
@@ -28,12 +29,15 @@ for(i in 1:length(tifs)){
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz) # for some reason this works better with doparallel and foreach
-  splits <- foreach(j=1:length(sp_grd)) %dopar% raster::crop(r, sp_grd[j])
-  print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
+  splits <- foreach(j=1:length(sp_grd)) %dopar% {raster::crop(r, sp_grd[j])}
+  
+  print(paste(Sys.time() - t1, "minutes for splitting"))
   print(paste("it is", inMemory(splits[[1]], "that the cropped rasters are in memory.")))
   rm(r)
 
-  print(paste("They're this big:", format(object.size(splits),units = "Gb"), dataType(splits[[1]])))
+  print(paste("They're this big:", 
+              format(object.size(splits),units = "Gb")
+              ))
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
   year_thing = year - 1983
@@ -44,6 +48,7 @@ for(i in 1:length(tifs)){
   spl_rcl <- list()
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
+  print(paste("reclassifying"))
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
     raster::reclassify(splits[[k]], m)
   }
@@ -57,20 +62,25 @@ for(i in 1:length(tifs)){
   print(paste("reclassified thing",i, "is this big:", format(object.size(spl_rcl[[i]]),units = "Gb")))
   }
   if (storage.mode(spl_rcl[[1]][]) != "integer"){
-    print("We're gonna try and switch it to integer")
+    print(paste("We're gonna try and switch it to integer"))
     for(i in 1:length(spl_rcl)){
       gc()
       t <- Sys.time()
       storage.mode(spl_rcl[[i]][]) <- "integer"
       print(paste("converted raster", i, "to integer in", Sys.time()-t))
+      writeRaster(spl_rcl[[i]], filename = paste0("reclass",year,i,".tif"))
+      spl_rcl[[i]] <- NULL
     }
     print(paste("now it's this big:", format(object.size(spl_rcl), units = "Gb")))
   }
   
-  print(dataType(spl_rcl[[1]]))
-  print(object.size(spl_rcl))
   
   t1 <- Sys.time()
+  spl_rcl <-list()
+  files <- list.files("scrap/")
+  for(i in 1:length(files)){
+    spl_rcl[[i]] <- raster(files[i])
+  }
   rcl_all <- do.call(raster::merge, spl_rcl)
   print(paste(Sys.time()-t1, "minutes for merging", tifs[i]))
   
