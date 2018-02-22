@@ -21,6 +21,7 @@ sp_grd <- sf::as_Spatial(grd)
 
 for(i in 1:length(tifs)){
   r <- raster(tifs[i])
+  print(paste("data type is", dataType(r)))
   splits <- list()
   
   t1 <- Sys.time()
@@ -29,13 +30,13 @@ for(i in 1:length(tifs)){
   print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
   rm(r)
   
-  print(dtype(splits[[1]]))
+  print(dataType(splits[[1]]))
   print(object.size(splits))
   t1 <- Sys.time()
   for(i in 1:length(splits)){
   storage.mode(splits[[i]][]) <- "integer"
   }
-  print(paste(object.size(splits), Sys.time()-t1))
+  print(paste(object.size(splits), Sys.time()-t1, dataType(splits[[1]])))
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
   year_thing = year - 1983
@@ -55,14 +56,13 @@ for(i in 1:length(tifs)){
   rm(splits)
   
   print(dataType(spl_rcl[[1]]))
-  print(object.size(spl_rcl))
-  for(i in 1:length(spl_rcl)){
-    storage.mode(spl_rcl[[i]][]) <- "integer"
+  if (storage.mode(spl_rcl[[1]][]) != "integer"){
+    print(object.size(spl_rcl))
+    for(i in 1:length(spl_rcl)){
+      storage.mode(spl_rcl[[i]][]) <- "integer"
+    }
+    print(object.size(spl_rcl))
   }
-  print(object.size(spl_rcl))
-  
-  
-  
   
   print(dataType(spl_rcl[[1]]))
   print(object.size(spl_rcl))
