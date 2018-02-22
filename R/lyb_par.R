@@ -39,15 +39,15 @@ for(i in 1:length(tifs)){
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
-  spl_rcl <- foreach(k=1:length(splits)) %dopar% 
+  spl_rcl <- foreach(k=1:length(splits)) %dopar% {
     raster::reclassify(splits[[k]], m)
+    storage.mode(splits[[k]][]) <- "integer"
+  }
   
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   rm(splits)
   
   print(dataType(spl_rcl[[1]]))
-  print(object.size(spl_rcl))
-  storage.mode(spl_rcl) = "integer"
   print(object.size(spl_rcl))
   
   t1 <- Sys.time()
