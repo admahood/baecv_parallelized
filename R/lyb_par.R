@@ -49,7 +49,9 @@ for(i in 1:length(tifs)){
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   rm(splits)
   gc()
-  print(dataType(spl_rcl[[1]]))
+  for(i in 1:length(spl_rcl)){
+  print(paste(dataType(spl_rcl[[1]])), "this many bytes", object.size(spl_rcl[[i]]))
+  }
   if (storage.mode(spl_rcl[[1]][]) != "integer"){
     print(object.size(spl_rcl))
     for(i in 1:length(spl_rcl)){
