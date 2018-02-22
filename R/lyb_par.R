@@ -32,7 +32,7 @@ for(i in 1:length(tifs)){
   splits <- foreach(j=1:length(sp_grd)) %dopar% {raster::crop(r, sp_grd[j])}
   
   print(paste(Sys.time() - t1, "minutes for splitting"))
-  print(paste("it is", inMemory(splits[[1]], "that the cropped rasters are in memory.")))
+  print(paste("it is", inMemory(splits[[1]]), "that the cropped rasters are in memory."))
   rm(r)
 
   print(paste("They're this big:", 
