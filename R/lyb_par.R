@@ -22,16 +22,18 @@ sp_grd <- sf::as_Spatial(grd)
 
 for(i in 1:length(tifs)){
   r <- raster(tifs[i])
-  print(paste("data type is", dataType(r)))
+  print(paste("data type is:", dataType(r)))
+  print(paste("it's this big:", format(object.size(r), units = "Gb")))
   splits <- list()
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz) # for some reason this works better with doparallel and foreach
   splits <- foreach(j=1:length(sp_grd)) %dopar% raster::crop(r, sp_grd[j])
   print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
+  print(paste("it is", inMemory(splits[[1]], "that the cropped rasters are in memory.")))
   rm(r)
 
-  print(paste(object.size(splits), dataType(splits[[1]])))
+  print(paste("They're this big:", format(object.size(splits),units = "Gb"), dataType(splits[[1]])))
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
   year_thing = year - 1983
@@ -45,22 +47,24 @@ for(i in 1:length(tifs)){
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
     raster::reclassify(splits[[k]], m)
   }
-  
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
+  print(paste("reclassified thing is in memory?", inMemory(spl_rcl[[1]])))
   rm(splits)
+  
   gc()
   for(i in 1:length(spl_rcl)){
-  print(paste(dataType(spl_rcl[[1]])), "this many bytes", object.size(spl_rcl[[i]]))
+  print(paste("reclassified thing",i,"is this type:",dataType(spl_rcl[[1]])))
+  print(paste("reclassified thing",i, "is this big:", format(object.size(spl_rcl[[i]]),units = "Gb")))
   }
   if (storage.mode(spl_rcl[[1]][]) != "integer"){
-    print(object.size(spl_rcl))
+    print("We're gonna try and switch it to integer")
     for(i in 1:length(spl_rcl)){
       gc()
       t <- Sys.time()
       storage.mode(spl_rcl[[i]][]) <- "integer"
       print(paste("converted raster", i, "to integer in", Sys.time()-t))
     }
-    print(object.size(spl_rcl))
+    print(paste("now it's this big:", format(object.size(spl_rcl), units = "Gb")))
   }
   
   print(dataType(spl_rcl[[1]]))
