@@ -30,17 +30,15 @@ for(i in 1:length(tifs)){
   rm(r)
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
-  # v = c(0,0,0,
-  #       0.9,1.1,year)
-  # m = matrix(v, ncol=3, byrow=TRUE)
+  v = c(0,0,0,
+        0.9,1.1,year)
+  m = matrix(v, ncol=3, byrow=TRUE)
   spl_rcl <- list()
-  
-  year_thing <- year - 1984
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
   spl_rcl <- foreach(k=1:length(splits)) %dopar% 
-    raster::calc(splits[[k]], fun = function(x){x + year_thing})
+    raster::reclassify(splits[[k]], m, dtype = "INT2U")
   
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   rm(splits)
@@ -54,7 +52,7 @@ for(i in 1:length(tifs)){
   print(dataType(rcl_all))
   
   t1 <- Sys.time()
-  writeRaster(rcl_all, file)
+  writeRaster(rcl_all, file, dtype = "INT2U")
   print(paste(Sys.time()-t1, "minutes for writing", tifs[i]))
   
   t1 <- Sys.time()
