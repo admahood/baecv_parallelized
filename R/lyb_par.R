@@ -29,6 +29,14 @@ for(i in 1:length(tifs)){
   print(paste(Sys.time() - t1, "minutes for splitting", tifs[i]))
   rm(r)
   
+  print(dtype(splits[[1]]))
+  print(object.size(splits))
+  t1 <- Sys.time()
+  for(i in 1:length(splits)){
+  storage.mode(splits[[i]][]) <- "integer"
+  }
+  print(paste(object.size(splits), Sys.time()-t1))
+  
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
   year_thing = year - 1983
   
@@ -41,11 +49,20 @@ for(i in 1:length(tifs)){
   registerDoParallel(cores=corz)
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
     raster::reclassify(splits[[k]], m)
-    storage.mode(splits[[k]][]) <- "integer"
   }
   
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   rm(splits)
+  
+  print(dataType(spl_rcl[[1]]))
+  print(object.size(spl_rcl))
+  for(i in 1:length(spl_rcl)){
+    storage.mode(spl_rcl[[i]][]) <- "integer"
+  }
+  print(object.size(spl_rcl))
+  
+  
+  
   
   print(dataType(spl_rcl[[1]]))
   print(object.size(spl_rcl))
