@@ -5,6 +5,21 @@ library(doParallel)
 library(sp)
 library(sf)
 
+# functions---------------------------------------------------------------------------
+# copied from raster vignette
+
+thanks_internet <- function(x, a, filename) {
+  out <- raster(x)
+  out <- writeStart(out, filename, overwrite=TRUE)
+  for (r in 1:nrow(out)) {
+    v <- getValues(x, r)
+    v <- v + a
+    out <- writeValues(out, v, r)
+    }
+  out <- writeStop(out)
+  return(out)
+  }
+
 # Workflow _______________________________________________________________________________
 setwd("~/baecv_parallelized")
 dir.create("results")
@@ -38,18 +53,21 @@ for(i in 1:length(tifs)){
               format(object.size(splits),units = "Gb")
               ))
   
-  year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
-  year_thing = year - 1983
-  v = c(0,0,0,
-        0.9,1.1,year_thing)
-  m = matrix(v, ncol=3, byrow=TRUE)
+  # year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
+  # year_thing = year - 1983
+  # v = c(0,0,0,
+  #       0.9,1.1,year_thing)
+  # m = matrix(v, ncol=3, byrow=TRUE)
   
   spl_rcl <- list()
   t1 <- Sys.time()
   registerDoParallel(cores=corz)
   print(paste("reclassifying"))
+  filename <- paste0("scrap/reclassified", year, ".tif")
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
-    raster::reclassify(splits[[k]], m)
+    # raster::reclassify(splits[[k]], m)
+    spl_rcl[[k]] <- thanks_internet(splits[[k]], i, filename)
+    splits[[k]] <- NULL
   }
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
   print(paste("reclassified thing is in memory?", inMemory(spl_rcl[[1]])))
