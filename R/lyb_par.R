@@ -24,7 +24,6 @@ sp_grd <- sf::as_Spatial(grd)
 for(i in 1:length(tifs)){
   r <- raster(tifs[i])
   print(paste("data type is:", dataType(r)))
-  print(paste("it's this big:", format(object.size(r), units = "Mb")))
   splits <- list()
   
   t1 <- Sys.time()
@@ -56,31 +55,31 @@ for(i in 1:length(tifs)){
   print(paste("reclassified thing is in memory?", inMemory(spl_rcl[[1]])))
   rm(splits)
   
-  gc()
-  for(i in 1:length(spl_rcl)){
-  print(paste("reclassified thing",i,"is this type:",dataType(spl_rcl[[1]])))
-  print(paste("reclassified thing",i, "is this big:", format(object.size(spl_rcl[[i]]),units = "Gb")))
-  }
-  if (storage.mode(spl_rcl[[1]][]) != "integer"){
-    print(paste("We're gonna try and switch it to integer"))
-    for(i in 1:length(spl_rcl)){
-      gc()
-      t <- Sys.time()
-      storage.mode(spl_rcl[[i]][]) <- "integer"
-      print(paste("converted raster", i, "to integer in", Sys.time()-t))
-      writeRaster(spl_rcl[[i]], filename = paste0("scrap/reclass",year,i,".tif"))
-      spl_rcl[[i]] <- NULL
-    }
-    print(paste("now it's this big:", format(object.size(spl_rcl), units = "Gb")))
-  }
+  # gc()
+  # for(l in 1:length(spl_rcl)){
+  # print(paste("reclassified thing",i,"is this type:",dataType(spl_rcl[[1]])))
+  # print(paste("reclassified thing",i, "is this big:", format(object.size(spl_rcl[[l]]),units = "Gb")))
+  # }
+  # if (storage.mode(spl_rcl[[1]][]) != "integer"){
+  #   print(paste("We're gonna try and switch it to integer"))
+  #   for(l in 1:length(spl_rcl)){
+  #     gc()
+  #     t <- Sys.time()
+  #     storage.mode(spl_rcl[[l]][]) <- "integer"
+  #     print(paste("converted raster", l, "to integer in", Sys.time()-t))
+  #     writeRaster(spl_rcl[[l]], filename = paste0("scrap/reclass",year,l,".tif"))
+  #     spl_rcl[[l]] <- NULL
+  #   }
+  #   print(paste("now it's this big:", format(object.size(spl_rcl), units = "Gb")))
+  # }
   
   
   t1 <- Sys.time()
-  spl_rcl <-list()
-  files <- list.files("scrap/")
-  for(i in 1:length(files)){
-    spl_rcl[[i]] <- raster(files[i])
-  }
+  # spl_rcl <-list()
+  # files <- list.files("scrap/")
+  # for(i in 1:length(files)){
+  #   spl_rcl[[i]] <- raster(files[i])
+  # }
   rcl_all <- do.call(raster::merge, spl_rcl)
   print(paste(Sys.time()-t1, "minutes for merging", tifs[i]))
   
