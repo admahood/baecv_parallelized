@@ -13,7 +13,7 @@ thanks_internet <- function(x, a, filename) {
   out <- writeStart(out, filename, overwrite=TRUE)
   for (r in 1:nrow(out)) {
     v <- getValues(x, r)
-    v <- v + a
+    v <- v * a
     out <- writeValues(out, v, r)
     }
   out <- writeStop(out)
@@ -36,7 +36,7 @@ pol <- st_as_sfc(st_bbox(raster(tifs[1])))
 grd <- st_make_grid(pol,n=c(corz,1))
 sp_grd <- sf::as_Spatial(grd)
 
-for(i in 1:length(tifs)){
+for(i in 2:length(tifs)){
   r <- raster(tifs[i])
   print(paste("data type is:", dataType(r)))
   splits <- list()
