@@ -55,7 +55,7 @@ for(i in 4:length(tifs)){
   registerDoParallel(cores=corz)
   print(paste("reclassifying"))
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
-    filename <- paste0("scrap/reclassified", year,k, ".tif")
+    filename <- paste0("scrap/reclassified", year, k, ".tif")
     spl_rcl[[k]] <- thanks_internet(splits[[k]], i, filename)
     splits[[k]] <- NULL
   }
