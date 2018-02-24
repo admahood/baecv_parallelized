@@ -56,7 +56,7 @@ for(i in 4:length(tifs)){
   print(paste("reclassifying"))
   filename <- paste0("scrap/reclassified", year,i, ".tif")
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
-    spl_rcl[[k]] <- thanks_internet(splits[[k]], i, filename)
+    spl_rcl[[k]] <- thanks_internet(splits[[k]], k, filename)
     splits[[k]] <- NULL
   }
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
