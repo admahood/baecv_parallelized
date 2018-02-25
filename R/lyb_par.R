@@ -56,7 +56,7 @@ for(i in 4:length(tifs)){
   print(paste("reclassifying"))
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
     filename <- paste0("scrap/reclassified", year, k, ".tif")
-    spl_rcl[[k]] <- thanks_internet(splits[[k]], i, filename)
+    spl_rcl[[k]] <- thanks_internet(splits[[k]], year, filename)
     splits[[k]] <- NULL
   }
   print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
@@ -65,8 +65,8 @@ for(i in 4:length(tifs)){
   t1 <- Sys.time()
   spl_rcl <-list()
   files <- list.files("scrap/")
-  for(i in 1:length(files)){
-    spl_rcl[[i]] <- raster(files[i])
+  for(p in 1:length(files)){
+    spl_rcl[[p]] <- raster(paste0("scrap/",files[p]))
   }
   rcl_all <- do.call(raster::merge, spl_rcl)
   print(paste(Sys.time()-t1, "minutes for merging", tifs[i]))
