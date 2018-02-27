@@ -36,7 +36,7 @@ pol <- st_as_sfc(st_bbox(raster(tifs[1])))
 grd <- st_make_grid(pol,n=c(corz,1))
 sp_grd <- sf::as_Spatial(grd)
 
-for(i in 4:length(tifs)){
+for(i in 1:length(tifs)){
   t00 <- Sys.time()
   r <- raster(tifs[i])
   print(paste("beginning", tifs[i]))
