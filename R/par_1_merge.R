@@ -15,15 +15,16 @@ thanks_internet <- function(x, a, filename) {
     v <- getValues(x, r)
     v <- v * a
     out <- writeValues(out, v, r)
-    }
+  }
   out <- writeStop(out)
   return(out)
-  }
+}
 
 # Workflow _______________________________________________________________________________
 setwd("~/baecv_parallelized")
 dir.create("results")
 dir.create("scrap")
+dir.create("data")
 raster::removeTmpFiles()
 
 tif_path <- "data/" # path to a folder containing tif files
@@ -38,18 +39,16 @@ for(i in 1:length(years)){
   print("downloading")
   dl_file <-(paste0("BAECV_",years[i],"_v1.1_20170908.tar.gz"))
   system(paste0("aws s3 cp ",
-                s3_prefix, "v11/", dl_file, "_",
+                s3_prefix, "v1.1/", dl_file, " ",
                 "data/", dl_file))
   print(Sys.time() - t1)
   
-  ex_file <- paste0("BAECV_bc_",years[i],"_v1.1_20170908")
+  ex_file <- paste0("BAECV_bc_",years[i],"_v1.1_20170908.tif")
   t1 <- Sys.time()
   print("extracting")
-  untar(paste0("data/", dl_file),
-        files = ex_file,
-        exdir = "data/")
-  print(Sys.time()-t1)  
-  
+  system(paste0("tar -zxvf data/", dl_file, " ", ex_file))
+  system(paste0("rm data/", dl_file))
+  print(Sys.time()-t1)
   
   print(paste("beginning", years[i]))
   r <- raster(paste0("data/", ex_file))
