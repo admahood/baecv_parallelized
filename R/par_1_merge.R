@@ -29,18 +29,37 @@ raster::removeTmpFiles()
 tif_path <- "data/" # path to a folder containing tif files
 result_path <- "results" # where you want the resulting rasters to go
 corz <- detectCores()
+s3_prefix <- "s3://earthlab-ls-fire/"
+years <- 1984:2015
 
-
-tifs <- Sys.glob(paste0(tif_path, "BAECV*.tif"))
-pol <- st_as_sfc(st_bbox(raster(tifs[1])))
-grd <- st_make_grid(pol,n=c(corz,1))
-sp_grd <- sf::as_Spatial(grd)
-
-for(i in 1:length(tifs)){
+for(i in 1:length(years)){
   t00 <- Sys.time()
-  r <- raster(tifs[i])
-  print(paste("beginning", tifs[i]))
+  t1 <- Sys.time()
+  print("downloading")
+  dl_file <-(paste0("BAECV_",years[i],"_v1.1_20170908.tar.gz"))
+  system(paste0("aws s3 cp ",
+                s3_prefix, "v11/", dl_file, "_",
+                "data/", dl_file))
+  print(Sys.time() - t1)
+  
+  ex_file <- paste0("BAECV_bc_",years[i],"_v1.1_20170908")
+  t1 <- Sys.time()
+  print("extracting")
+  untar(paste0("data/", dl_file),
+        files = ex_file,
+        exdir = "data/")
+  print(Sys.time()-t1)  
+  
+  
+  print(paste("beginning", years[i]))
+  r <- raster(paste0("data/", ex_file))
   splits <- list()
+  
+  if (!exists("sp_grd")){
+    pol <- st_as_sfc(st_bbox(r))
+    grd <- st_make_grid(pol,n=c(corz,1))
+    sp_grd <- sf::as_Spatial(grd)
+  }
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz) # for some reason this works better with doparallel and foreach
@@ -81,13 +100,42 @@ for(i in 1:length(tifs)){
   print(Sys.time()-t00)
   print("for the whole thing")
 }
-# 
-# res_tifs <- Sys.glob(paste0(result_path,"lyb_*.tif"))
-# lyb_stk <- raster::stack(res_tifs)
-# lyb <- calc(lyb_stk, max) 
-# #now reclassify or figure out how to add 1983 while preserving 0s
-# final_file <-  paste0(result_path,"lyb_whole_US_1984_2015_BAECV.tif")
-# raster::writeRaster(lyb, filename = final_file)
-# system(paste0("aws s3 cp ",
-#               final_file, " ",
-#               "s3://earthlab-ls-fire/lyb/lyb_whole_US_1984_2015.tif"))
+dir.create("scrap")
+dir.create("results")
+system(paste0("aws s3 cp ",
+              "s3://earthlab-ls-fire/lyb/nomerge/ ",
+              "scrap/ ",
+              "--recursive"))
+
+xmins <- c()
+foreach(i = 1:length(sp_grd)) %dopar% {
+  xmin <- substr(as.character(sp_grd[i]@bbox[[1]]),1,4)
+  tifs <- Sys.glob(paste0("scrap/*", xmin,".tif"))
+  stk <- raster::stack(tifs)
+  clc <- raster::calc(stk, max)
+  filename <- paste0("results/lyb_",xmin,"tif")
+  writeRaster(clc, filename=filename)
+}
+
+t1 <- Sys.time()
+spl_rcl <-list()
+files <- list.files("results/")
+for(p in 1:length(files)){
+  spl_rcl[[p]] <- raster(paste0("results/",files[p]))
+}
+rcl_all <- do.call(raster::merge, spl_rcl)
+print(Sys.time()-t1)
+print("for merging")
+
+
+t1 <- Sys.time()
+writeRaster(rcl_all, "results/lyb_usa_baecv_1984_2015.tif")
+print(Sys.time()-t1)
+print("for writing")
+
+t1 <- Sys.time()
+system(paste0("aws s3 cp ",
+              "results/lyb_usa_baecv_1984_2015.tif ",
+              "s3://earthlab-ls-fire/lyb/lyb_usa_baecv_1984_2015.tif"))
+print(Sys.time()-t1)
+print("for sending to s3")
