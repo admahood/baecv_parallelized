@@ -101,6 +101,8 @@ for(i in 1:length(years)){
   print(Sys.time()-t00)
   print("for the whole thing")
 }
+
+
 dir.create("scrap")
 dir.create("results")
 system(paste0("aws s3 cp ",
@@ -119,6 +121,7 @@ foreach(i = 1:length(sp_grd)) %dopar% {
 }
 
 t1 <- Sys.time()
+print("merging")
 spl_rcl <-list()
 files <- list.files("results/")
 for(p in 1:length(files)){
@@ -126,7 +129,6 @@ for(p in 1:length(files)){
 }
 rcl_all <- do.call(raster::merge, spl_rcl)
 print(Sys.time()-t1)
-print("for merging")
 
 
 t1 <- Sys.time()
