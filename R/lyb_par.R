@@ -37,15 +37,17 @@ grd <- st_make_grid(pol,n=c(corz,1))
 sp_grd <- sf::as_Spatial(grd)
 
 for(i in 4:length(tifs)){
+  t00 <- Sys.time()
   r <- raster(tifs[i])
-  print(paste("data type is:", dataType(r)))
+  print(paste("beginning", tifs[i]))
   splits <- list()
   
   t1 <- Sys.time()
   registerDoParallel(cores=corz) # for some reason this works better with doparallel and foreach
   splits <- foreach(j=1:length(sp_grd)) %dopar% {raster::crop(r, sp_grd[j])}
   
-  print(paste(Sys.time() - t1, "minutes for splitting"))
+  print("time for splitting")
+  print(Sys.time() - t1)
   rm(r)
   
   year = as.integer(substr(splits[[1]]@data@names, 10,13)) # needs to be changed away from these magic numbers
@@ -59,7 +61,8 @@ for(i in 4:length(tifs)){
     spl_rcl[[k]] <- thanks_internet(splits[[k]], year, filename)
     splits[[k]] <- NULL
   }
-  print(paste(Sys.time()-t1, "minutes for reclassifying", tifs[i]))
+  print("time for reclassifying")
+  print(Sys.time()-t1)
   rm(splits)
   
   t1 <- Sys.time()
@@ -69,19 +72,22 @@ for(i in 4:length(tifs)){
     spl_rcl[[p]] <- raster(paste0("scrap/",files[p]))
   }
   rcl_all <- do.call(raster::merge, spl_rcl)
-  print(paste(Sys.time()-t1, "minutes for merging", tifs[i]))
+  print(Sys.time()-t1)
+  print("for merging")
   
   file <- file.path(result_path, paste0("lyb_",year, ".tif"))
 
   t1 <- Sys.time()
   writeRaster(rcl_all, file, dtype = "INT1U")
-  print(paste(Sys.time()-t1, "minutes for writing", tifs[i]))
+  print(Sys.time()-t1)
+  print("for writing")
   
   t1 <- Sys.time()
   system(paste0("aws s3 cp ",
                 file, " ",
                 "s3://earthlab-ls-fire/lyb/lyb_",year,".tif"))
-  print(paste(Sys.time()-t1, "sending to s3", tifs[i]))
+  print(Sys.time()-t1)
+  print("for sending to s3")
   
   system(paste("rm", file))
   system(paste("rm scrap/*"))
@@ -89,6 +95,8 @@ for(i in 4:length(tifs)){
   rm(spl_rcl)
   raster::removeTmpFiles()
   gc()
+  print(Sys.time()-t00)
+  print("for the whole thing")
 }
 
 res_tifs <- Sys.glob(paste0(result_path,"lyb_*.tif"))
