@@ -58,7 +58,7 @@ for(i in 1:length(tifs)){
   print(paste("reclassifying"))
   spl_rcl <- foreach(k=1:length(splits)) %dopar% {
     xmin <- (substr(as.character(sp_grd[k]@bbox[[1]]),1,4))
-    filename <- paste0("scrap/reclassified", year, xmin, ".tif")
+    filename <- paste0("scrap/rcl", year,"_", xmin, ".tif")
     spl_rcl[[k]] <- thanks_internet(splits[[k]], year, filename)
     splits[[k]] <- NULL
   }
@@ -69,7 +69,7 @@ for(i in 1:length(tifs)){
   t1 <- Sys.time()
   system(paste0("aws s3 cp ",
                 "scrap/ ",
-                "s3://earthlab-ls-fire/lyb/nomerge ",
+                "s3://earthlab-ls-fire/lyb/nomerge/ ",
                 "--recursive"))
   print(Sys.time()-t1)
   print("for sending to s3")
