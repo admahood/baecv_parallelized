@@ -69,7 +69,7 @@ for(i in 1:length(tifs)){
   t1 <- Sys.time()
   system(paste0("aws s3 cp ",
                 "scrap/ ",
-                "s3://earthlab-ls-fire/lyb/ ",
+                "s3://earthlab-ls-fire/lyb/nomerge ",
                 "--recursive"))
   print(Sys.time()-t1)
   print("for sending to s3")
@@ -81,13 +81,13 @@ for(i in 1:length(tifs)){
   print(Sys.time()-t00)
   print("for the whole thing")
 }
-
-res_tifs <- Sys.glob(paste0(result_path,"lyb_*.tif"))
-lyb_stk <- raster::stack(res_tifs)
-lyb <- calc(lyb_stk, max) 
-#now reclassify or figure out how to add 1983 while preserving 0s
-final_file <-  paste0(result_path,"lyb_whole_US_1984_2015_BAECV.tif")
-raster::writeRaster(lyb, filename = final_file)
-system(paste0("aws s3 cp ",
-              final_file, " ",
-              "s3://earthlab-ls-fire/lyb/lyb_whole_US_1984_2015.tif"))
+# 
+# res_tifs <- Sys.glob(paste0(result_path,"lyb_*.tif"))
+# lyb_stk <- raster::stack(res_tifs)
+# lyb <- calc(lyb_stk, max) 
+# #now reclassify or figure out how to add 1983 while preserving 0s
+# final_file <-  paste0(result_path,"lyb_whole_US_1984_2015_BAECV.tif")
+# raster::writeRaster(lyb, filename = final_file)
+# system(paste0("aws s3 cp ",
+#               final_file, " ",
+#               "s3://earthlab-ls-fire/lyb/lyb_whole_US_1984_2015.tif"))
