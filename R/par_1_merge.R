@@ -110,13 +110,12 @@ system(paste0("aws s3 cp ",
               "scrap/ ",
               "--recursive"))
 
-xmins <- c()
 foreach(i = 1:length(sp_grd)) %dopar% {
   xmin <- substr(as.character(sp_grd[i]@bbox[[1]]),1,4)
   tifs <- Sys.glob(paste0("scrap/*", xmin,".tif"))
   stk <- raster::stack(tifs)
   clc <- raster::calc(stk, max)
-  filename <- paste0("results/lyb_",xmin,"tif")
+  filename <- paste0("results/lyb_",xmin,".tif")
   writeRaster(clc, filename=filename)
 }
 
