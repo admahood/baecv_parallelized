@@ -36,6 +36,7 @@ years <- 1984:2015
 for(i in 1:length(years)){
   t00 <- Sys.time()
   t1 <- Sys.time()
+  
   print("downloading")
   dl_file <-(paste0("BAECV_",years[i],"_v1.1_20170908.tar.gz"))
   system(paste0("aws s3 cp ",
@@ -51,7 +52,7 @@ for(i in 1:length(years)){
   print(Sys.time()-t1)
   
   print(paste("beginning", years[i]))
-  r <- raster(paste0("data/", ex_file))
+  r <- raster(paste0(ex_file))
   splits <- list()
   
   if (!exists("sp_grd")){
@@ -93,12 +94,15 @@ for(i in 1:length(years)){
   print("for sending to s3")
   
   system(paste("rm scrap/*"))
+  system(paste("rm", ex_file))
   rm(spl_rcl)
   raster::removeTmpFiles()
   gc()
   print(Sys.time()-t00)
   print("for the whole thing")
 }
+
+
 dir.create("scrap")
 dir.create("results")
 system(paste0("aws s3 cp ",
@@ -106,17 +110,17 @@ system(paste0("aws s3 cp ",
               "scrap/ ",
               "--recursive"))
 
-xmins <- c()
 foreach(i = 1:length(sp_grd)) %dopar% {
   xmin <- substr(as.character(sp_grd[i]@bbox[[1]]),1,4)
   tifs <- Sys.glob(paste0("scrap/*", xmin,".tif"))
   stk <- raster::stack(tifs)
   clc <- raster::calc(stk, max)
-  filename <- paste0("results/lyb_",xmin,"tif")
+  filename <- paste0("results/lyb_",xmin,".tif")
   writeRaster(clc, filename=filename)
 }
 
 t1 <- Sys.time()
+print("merging")
 spl_rcl <-list()
 files <- list.files("results/")
 for(p in 1:length(files)){
@@ -124,7 +128,6 @@ for(p in 1:length(files)){
 }
 rcl_all <- do.call(raster::merge, spl_rcl)
 print(Sys.time()-t1)
-print("for merging")
 
 
 t1 <- Sys.time()
